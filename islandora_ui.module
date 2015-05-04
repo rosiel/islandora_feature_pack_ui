@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Islandora UI Feature Pack module. Includes all hook implementations.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function islandora_ui_menu() {
+  $items = array();
+  $items['admin/islandora/tools/ui'] = array(
+    'title' => 'User Interface Features',
+    'description' => 'Configure extra UI Features',
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('administer site configuration'),
+    'page arguments' => array('islandora_ui_admin_form'),
+    'file' => 'includes/admin.form.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  // Scan all associations to build object links.
+  module_load_include('inc', 'xml_form_builder', 'includes/associations');
+  module_load_include('inc', 'islandora', 'includes/utilities');
+  $associations = xml_form_builder_get_associations();
+  $dsids_to_include = array();
+  foreach ($associations as $association) {
+    if (!isset($dsids_to_include[$association['dsid']])) {
+      $dsids_to_include[$association['dsid']] = array($association['content_model']);
+    }
+    else {
+      $dsids_to_include[$association['dsid']][] = $association['content_model'];
+    }
+  }
+
+  foreach($dsids_to_include as $dsid => $cmodels) {
+    $items['islandora/object/%islandora_object/edit_' . $dsid] = array(
+      'title' => 'Edit ' . $dsid,
+      'page callback' => 'islandora_ui_edit_datastream',
+      'page arguments' => array(2, $dsid),
+      'type' => MENU_LOCAL_TASK,
+      'access callback' => 'islandora_ui_edit_datastream_access',
+      'access arguments' => array(2, $dsid),
+    );
+    $items['islandora/object/%islandora_object/add_' . $dsid] = array(
+      'title' => 'Add ' . $dsid,
+      'type' => MENU_LOCAL_TASK,
+      'access callback' => 'islandora_ui_add_datastream_access',
+      'access arguments' => array(2, $dsid, $cmodels),
+      'file' => 'includes/datastream.form.inc',
+      'file path' => drupal_get_path('module', 'xml_form_builder'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('xml_form_builder_datastream_form', 2, $dsid),
+    );
+  }
+  return $items;
+}
+
+/**
+ * Callback to edit the datastream.
+ */
+function islandora_ui_edit_datastream($object, $dsid) {
+  if (isset($object[$dsid])) {
+    module_load_include('inc', 'islandora', 'includes/datastream');
+    return islandora_edit_datastream($object[$dsid]);
+  }
+  else {
+    // No edit implementations.
+    drupal_set_message(t('This datastream does not exist.'));
+    drupal_goto("islandora/object/{$object->id}/manage/datastreams");
+    break;
+  }
+}
+
+/**
+ * Access callback for editing datastreams also checks if datastream is present.
+ */
+function islandora_ui_edit_datastream_access($object, $dsid) {
+  if (!isset($object[$dsid])) {
+    return FALSE;
+  }
+  else {
+    return islandora_datastream_access(ISLANDORA_METADATA_EDIT, $object[$dsid]);
+  }
+}
+
+
+/*
+ * Access callback for adding a new datastream.
+ */
+function islandora_ui_add_datastream_access($object, $dsid, $cmodels) {
+  if (isset($object[$dsid])) {
+    return FALSE;
+  }
+  else {
+    if (!empty(array_intersect($object->models, $cmodels))) {
+      return islandora_object_access_callback(ISLANDORA_ADD_DS, $object);
+    }
+  }
+
+}

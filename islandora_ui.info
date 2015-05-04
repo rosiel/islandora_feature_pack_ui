@@ -1,0 +1,6 @@
+name = "Islandora User Interface (UI) Feature Pack"
+description = "Creates commonly used shortcuts for content managers."
+dependencies[] = islandora
+package = Islandora Tools
+version = 7.x-dev
+core = 7.x
