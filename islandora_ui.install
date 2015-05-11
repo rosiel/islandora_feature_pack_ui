@@ -1,0 +1,54 @@
+<?php
+
+/**
+ * @file
+ * Implementations of installation hooks.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function islandora_ui_schema() {
+  $schema['islandora_ui_autocomplete'] = array(
+    'description' => 'Table that stores saved autocomplete configurations.',
+    'fields' => array(
+      'machine_name' => array(
+        'description' => 'Machine readable name of the autocomplete configuration.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'Human-readable name of the autocomplete configuration',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+      'filters' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => '',
+      ),
+      'search_field' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'description' => 'The solr field to search',
+        'default' => NULL,
+      ),
+    ),
+    'primary key' => array('machine_name'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function islandora_ui_uninstall() {
+// Delete any variables i define.
+}
+
+
