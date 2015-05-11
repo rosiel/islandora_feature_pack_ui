@@ -41,7 +41,7 @@ function islandora_ui_menu() {
       'page arguments' => array(2, $dsid),
       'type' => MENU_LOCAL_TASK,
       'access callback' => 'islandora_ui_edit_datastream_access',
-      'access arguments' => array(2, $dsid),
+      'access arguments' => array(2, $dsid, $cmodels),
     );
     $items['islandora/object/%islandora_object/add_' . $dsid] = array(
       'title' => 'Add ' . $dsid,
@@ -76,11 +76,11 @@ function islandora_ui_edit_datastream($object, $dsid) {
 /**
  * Access callback for editing datastreams also checks if datastream is present.
  */
-function islandora_ui_edit_datastream_access($object, $dsid) {
+function islandora_ui_edit_datastream_access($object, $dsid, $cmodels) {
   if (!isset($object[$dsid])) {
     return FALSE;
   }
-  else {
+  elseif (!empty(array_intersect($object->models, $cmodels))) {
     return islandora_datastream_access(ISLANDORA_METADATA_EDIT, $object[$dsid]);
   }
 }
