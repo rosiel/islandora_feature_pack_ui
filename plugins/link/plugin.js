@@ -29,6 +29,7 @@
     };
 
     var initAutocomplete = function(input, uri) {
+        $(input).unbind('keydown').unbind('keyup').unbind('blur').removeClass('autocomplete-processed');
         input.setAttribute('autocomplete', 'OFF');
         new Drupal.jsAC($(input), new Drupal.ACDB(uri));
     };
@@ -116,6 +117,7 @@
                         label: editor.lang.link.title,
                         required: true,
                         onLoad: function() {
+                            console.log("doing the onLoad!")
                             this.getInputElement().addClass('form-autocomplete');
                             initAutocomplete(this.getInputElement().$, Drupal.settings.islandora_link.autocomplete_path + 'fpp');
                         },

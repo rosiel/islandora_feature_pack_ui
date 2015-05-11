@@ -19,14 +19,14 @@ function islandora_ui_get_configurations() {
       $i18n_id = islandora_solr_metadata_config_i18n_id($record->machine_name);
       $config_name = i18n_string_translate($i18n_id, $config_name);
     }
-    // Ignore filters for now?
-    // $filters = ...
+    // Format this as key-less arrays in order to pass it into JS as a 'list of lists'.
+
 
     $configurations[] = array(
       'name' => $config_name,
-      //'' => $record->configuration_id,
-      'search_field' => $record->search_field,
       'machine_name' => $record->machine_name,
+      'search_field' => $record->search_field,
+      'filters' => unserialize($record->filters),
     );
   }
   return $configurations;
@@ -81,4 +81,27 @@ function islandora_ui_retrieve_configuration($machine_name) {
     $config['filters'] = unserialize($config['filters']);
   }
   return $config;
+}
+
+
+/**
+ * Delete the given configuration indicated by the given ID.
+ *
+ * @param int $machine_name
+ *   The ID for a configuration to remove.
+ */
+function islandora_ui_delete_configuration($machine_name) {
+  // FIXME IMplement i18n
+  /*
+  if (module_exists('i18n_string')) {
+    $fields = islandora_solr_metadata_get_fields($machine_name, FALSE);
+    foreach (array_keys($fields) as $field) {
+      $i18n_id = islandora_solr_metadata_field_i18n_id($machine_name, $field);
+      i18n_string_remove($i18n_id);
+    }
+  }
+  */
+  db_delete('islandora_ui_autocomplete')
+    ->condition('machine_name', $machine_name)
+    ->execute();
 }

@@ -18,13 +18,7 @@ function islandora_ui_admin_config_form($form, &$form_state, $machine_name) {
       foreach ($rows_to_remove as $key) {
         unset($form_state['complete form']['islandora_ui_filters']['table_wrapper']['table']['#options'][$key]);
       }
-      /*
-      foreach ($rows_to_remove as $row_number) {
-        unset($form_state['values']['islandora_solr_metadata_fields']['table_wrapper']['table']['table']['rows'][$row_number]);
-      }
-      */
     }
-
 
     if ($form_state['triggering_element']['#name'] == 'islandora-ui-filters-add-filter') {
       $filter_to_add = array(
@@ -82,7 +76,7 @@ function islandora_ui_admin_config_form($form, &$form_state, $machine_name) {
     '#collapsible' => FALSE,
   );
   $form['islandora_ui_filters']['table_wrapper'] = array(
-    '#prefix' => '<div id="islandora-ui-filters-wrapper">', // FIXME ID
+    '#prefix' => '<div id="islandora-ui-filters-wrapper">',
     '#suffix' => '</div>',
   );
   $filters = array();
@@ -159,13 +153,13 @@ function islandora_ui_admin_config_form($form, &$form_state, $machine_name) {
     ),
   );
 
-  $form['islandora_ui_save'] = array( // FIXME
+  $form['islandora_ui_save'] = array(
     '#type' => 'submit',
     '#name' => 'islandora-ui-save-button',
     '#value' => t('Save configuration'),
     '#weight' => 10,
   );
-  $form['islandora_ui_delete'] = array( // FIXME
+  $form['islandora_ui_delete'] = array(
     '#type' => 'submit',
     '#value' => t('Delete configuration'),
     '#name' => 'islandora-ui-delete-button',
@@ -220,35 +214,10 @@ function islandora_ui_admin_config_form_validate($form, $form_state) {
       form_set_error('islandora_ui', t('Must select at least one entry to remove!'));
     }
   }
-/*
-  if ($form_state['triggering_element']['#name'] == 'islandora-solr-metadata-cmodels-remove-selected') {
-    $rows_to_remove = array();
-    foreach ($form_state['values']['islandora_solr_metadata_cmodels']['table_wrapper']['table'] as $key => $row) {
-      if ($row !== 0) {
-        $rows_to_remove[] = $key;
-      }
-    }
-    if (count($rows_to_remove) === 0) {
-      form_set_error('islandora_solr_metadata', t('Must select at least one entry to remove!'));
-    }
-  }
-
-  if ($form_state['triggering_element']['#value'] == 'Save configuration') {
-    $solr_field = $form_state['values']['islandora_solr_metadata_fields']['description_fieldset']['available_solr_fields'];
-    if (!empty($solr_field)) {
-      module_load_include('inc', 'islandora_solr_search', 'includes/luke');
-      $solr_luke = islandora_solr_get_luke();
-      $luke_fields = array_keys($solr_luke['fields']);
-      if (!in_array($solr_field, $luke_fields)) {
-        form_set_error('islandora_solr_metadata_fields][description_fieldset][available_solr_fields', t('The field @field is not a valid field within Solr!', array('@field' => $solr_field)));
-      }
-    }
-  }
-*/
 }
 
 /**
- * Submit handler for the islandora_solr_metadata configuration form.
+ * Submit handler for the islandora_ui configuration form.
  *
  * @param array $form
  *   An array representing a Drupal form.
@@ -263,18 +232,16 @@ function islandora_ui_admin_config_form_submit($form, $form_state) {
     // Grab existing entries first for comparison.
     $configuration = islandora_ui_retrieve_configuration($machine_name);
 
-    //$fields_db = islandora_solr_metadata_get_fields($machine_name, FALSE);
     // set stuff from form_state.
     $configuration_fs = array(
       'label' => '',
       'machine_name' => '',
       'filters' => NULL,
       'search_field' => '',
-    ); // needs 'label', 'machine_name', 'filters', 'search_field'.
+    );
     $configuration_fs['search_field'] = $form_state['values']['islandora_ui_search_field']['search_field'];
     $configuration_fs['machine_name'] = $form_state['values']['islandora_ui_configuration_machine_name'];
     $configuration_fs['label'] = $form_state['values']['islandora_ui_label']['label'];
-
 
     if (isset($form_state['values']['islandora_ui_filters']['table_wrapper']['table'])) {
       $filters_fs = $form_state['values']['islandora_ui_filters']['table_wrapper']['table'];
@@ -293,7 +260,7 @@ function islandora_ui_admin_config_form_submit($form, $form_state) {
   }
 
   if ($form_state['clicked_button']['#name'] == 'islandora-ui-delete-button') {
-    drupal_goto("admin/islandora/search/islandora_solr_metadata/config/delete/$machine_name"); // FIXME IMPLEMENT
+    drupal_goto("admin/islandora/tools/ui/config/delete/$machine_name");
   }
 }
 

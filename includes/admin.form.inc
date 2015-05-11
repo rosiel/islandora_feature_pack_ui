@@ -16,15 +16,17 @@ function islandora_ui_admin_form($form, &$form_state) {
       l($configuration['name'], "admin/islandora/tools/ui/config/{$configuration['machine_name']}"),
       $configuration['machine_name'],
       $configuration['search_field'],
+      print_r($configuration['filters'], 1),
       );
   }
   $form['table'] = array(
     '#title' => t('Islandora autocomplete configurations'),
     '#markup' => theme('table', array(
       'header' => array(
-        t('Name'),
+        t('Edit'),
         t('Machine name'),
         t('Search field'),
+        t('Filters'),
       ),
       'rows' => $rows,
       'empty' => t('No configurations currently present.'),
@@ -52,16 +54,6 @@ function islandora_ui_admin_form($form, &$form_state) {
     '#value' => t('Add configuration'),
     '#name' => 'islandora_solr_metadata_add_configuration', // OMG FIX ME
   );
-  $form['islandora_entities_query_field'] = array(
-    '#type' => 'textfield',
-    '#title' => t('FOO DELETE ME.'),
-    '#default_value' => variable_get(
-      'islandora_ui_display_name',
-      'fgs_label_mt'
-    ),
-    '#description' => t('Solr Field for searching.'),
-    '#required' => TRUE,
-  );
 
   return $form;
 }
@@ -74,8 +66,9 @@ function islandora_ui_admin_form($form, &$form_state) {
  * @param array $form_state
  *   An array containing the Drupal form state.
  */
-function islandora_ui_admin_form_submit($form, $form_state) {
+function islandora_ui_admin_form_submit($form, &$form_state) {
   module_load_include('inc', 'islandora_ui', 'includes/db');
   islandora_ui_add_configuration($form_state['values']['configuration_name'], $form_state['values']['machine_name']);
   drupal_set_message(t('A new empty configuration has been created for @config_name', array('@config_name' => $form_state['values']['configuration_name'])));
+  $form_state['redirect'] = '/admin/islandora/tools/ui/config/' . $form_state['values']['machine_name'];
 }

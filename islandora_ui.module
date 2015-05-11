@@ -14,7 +14,7 @@ function islandora_ui_menu() {
   $items['islandora_ui/autocomplete/%'] = array(
     'page callback' => 'islandora_ui_autocomplete',
     'page arguments' => array(2),
-    'access arguments' => array('access ckeditor link'),
+    'access arguments' => array('access ckeditor link'), // FIXME
     'type' => MENU_CALLBACK,
   );
   $items['admin/islandora/tools/ui'] = array(
@@ -27,12 +27,20 @@ function islandora_ui_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
   $items['admin/islandora/tools/ui/config/%'] = array(
-    'title' => 'FIXME',
+    'title callback' => 'islandora_ui_get_config_title',
+    'title arguments' => array(5),
     'page callback' => 'drupal_get_form',
     'access arguments' => array('administer site configuration'),
     'page arguments' => array('islandora_ui_admin_config_form',5),
     'file' => 'includes/config.form.inc',
     'type' => MENU_NORMAL_ITEM,
+  );
+  $items['admin/islandora/tools/ui/config/delete/%'] = array(
+    'title' => 'Delete display configuration',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('islandora_ui_delete_config_form', 6),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'includes/delete.inc',
   );
 
   // Scan all associations to build object links.
@@ -121,7 +129,6 @@ function islandora_ui_add_datastream_access($object, $dsid, $cmodels) {
  */
 
 function islandora_ui_ckeditor_plugin() {
-  $a = 2;
   return array('islandora_path' => array(
     'name' => 'islandora_path',
     'desc' => t('Islandora Link - A plugin to easily create links to Islandora content.'),
@@ -151,28 +158,33 @@ function islandora_ui_text_format_pre_render($element) {
  * [This is just a do-it-once.]
  */
 function _islandora_ui_has_text_format($set = FALSE) {
-  static $rosiehas = FALSE;
+  static $islandora_ui_autocomplete_has = FALSE;
   if (!$set) {
-    return $rosiehas;
+    return $islandora_ui_autocomplete_has;
   }
-  $rosiehas = TRUE;
+  $islandora_ui_autocomplete_has = TRUE;
 }
 
 function islandora_ui_form_post_render($content, $element) {
-  static $rosieadded;
-  if (!isset($rosieadded) && _islandora_ui_has_text_format() && ($js = drupal_add_js()) && isset($js['settings']['data'])) {
+  static $islandora_ui_added;
+  if (!isset($islandora_ui_added) && _islandora_ui_has_text_format() && ($js = drupal_add_js()) && isset($js['settings']['data'])) {
+    module_load_include('inc', 'islandora_ui', 'includes/db');
+    $configurations = islandora_ui_get_configurations();
+    foreach ($configurations as $key => $config) {
+      $configurations[$key] = array($config['name'], $config['machine_name']);
+    }
     $settings = call_user_func_array('array_merge_recursive', $js['settings']['data']);
     if (isset($settings['ckeditor']) || isset($settings['wysiwyg']['configs']['ckeditor'])) {
-      $rosieadded = TRUE;
-      drupal_add_css(drupal_get_path('module', 'ckeditor_link') .'/ckeditor_link.css'); // FIXME
+      $islandora_ui_added = TRUE;
+      drupal_add_css(drupal_get_path('module', 'islandora_ui') .'/islandora_ui_autocomplete.css');
       drupal_add_js('misc/autocomplete.js');
       drupal_add_js(array('islandora_link' => array(
         'module_path' => base_path() . drupal_get_path('module', 'islandora_ui'),
         'autocomplete_path' => url('islandora_ui/autocomplete/'),
-        'revert_path' => url('ckeditor_link/revert'), // FIXME
+        //'revert_path' => url('ckeditor_link/revert'), // FIXME - implement revert.
         'msg_invalid_path' => t('Not a valid Islandora path.'),
         'type_name' => t('Islandora link'),
-        'autocomplete_options' => array(array('person', 'person'), array('collection','collection'), array('tune page','tune')),
+        'autocomplete_options' => $configurations,
         'type_selected' => 1, //(bool) variable_get('ckeditor_link_type_selected', 1),
       )), 'setting');
     }
@@ -192,6 +204,10 @@ function islandora_ui_autocomplete($config_name = NULL) {
   $limit = variable_get('islandora_ui_limit', 10);
   $configuration = islandora_ui_retrieve_configuration($config_name);
 
+  if (!$configuration) {
+    return;
+  }
+
   // set the query and the stub.
   $query = $configuration['search_field'] . ':*';
   $path = request_path();
@@ -205,7 +221,7 @@ function islandora_ui_autocomplete($config_name = NULL) {
     'fl' => array($configuration['search_field'], 'PID'),
   );
 
-  // Set the filters.
+  // Set the "filters" - at the moment they are in the query (q) and should be moved to filter query (fq).
   $filters = array();
   foreach($configuration['filters'] as $filter ) {
     $filters[] = $filter['predicate'] . ':"' . $filter['value'] . '"';
@@ -214,8 +230,7 @@ function islandora_ui_autocomplete($config_name = NULL) {
   if($filters) {
     $query .= ' AND ' . $filters;
   }
-  //$query = "$qualifier AND " . //'RELS_EXT_hasModel_uri_mt:"' . $mappings[$type]['cmodel'] . '"';
-  //print_r($query);
+
   $url = parse_url(variable_get('islandora_solr_url', 'localhost:8080/solr'));
   $solr = new Apache_Solr_Service($url['host'], $url['port'], $url['path'] . '/');
   $solr->setCreateDocuments(FALSE);
@@ -232,23 +247,24 @@ function islandora_ui_autocomplete($config_name = NULL) {
     if (isset($choice[$configuration['search_field']])) {
       $title = $choice[$configuration['search_field']][0];
       $pid = $choice['PID'];
-//      $list[$choice['PID']] = $choice[$mappings[$type]['title']][0] . ();
       $list["$title ($pid)"] = '<div class="reference-autocomplete">' . check_plain($title) . '</div>';
     }
   }
 
-
-  // THIS FROM CKEDITOR_LINK
-
-    //drupal_alter('ckeditor_link_autocomplete', $results, $string);
-
-    array_splice($list, $limit);
-  /*
-    foreach ($results as $path => $title) {
-      $matches[$title .' ('. $path .')'] = '<div class="reference-autocomplete">'. check_plain($title) .'</div>';
-    }
-  */
-
+  drupal_alter('islandora_ui_autocomplete', $results, $string);
+  array_splice($list, $limit);
   drupal_json_output($list);
 
+}
+
+/*
+ * Title callback for the config form.
+ */
+function islandora_ui_get_config_title($machine_name){
+  module_load_include('inc', 'islandora_ui', 'includes/db');
+  $config = islandora_ui_retrieve_configuration($machine_name);
+  if ($config) {
+    return 'Edit configuration ' . $config['label'];
+  }
+  return 'Editing configuration.';
 }
