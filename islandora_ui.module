@@ -201,7 +201,7 @@ function islandora_ui_autocomplete($config_name = NULL) {
   // Deal with no config name.
 
   $matches = array();
-  $limit = variable_get('islandora_ui_limit', 10);
+  $limit = variable_get('islandora_ui_limit', 10); //FIXME make the admin screen to configure this.
   $configuration = islandora_ui_retrieve_configuration($config_name);
 
   if (!$configuration) {
@@ -214,7 +214,15 @@ function islandora_ui_autocomplete($config_name = NULL) {
   if ($path) {
     $path_array = explode('/', $path);
     $stub = end($path_array);
-    $query = $configuration['search_field'] . ':' . $stub . '*';
+    $parts = explode(' ', $stub);
+    $stub = array_pop($parts);
+    $query = "";
+    if (!empty($parts)) {
+      foreach ($parts as $part) {
+        $query .= $configuration['search_field'] . ':' . $part . ' AND ';
+      }
+    }
+    $query .= "(" . $configuration['search_field'] . ':' . $stub . '*' . " OR " . $configuration['search_field'] . ':' . $stub . ")";
   }
   // Set the return values.
   $params = array(
@@ -222,6 +230,7 @@ function islandora_ui_autocomplete($config_name = NULL) {
   );
 
   // Set the "filters" - at the moment they are in the query (q) and should be moved to filter query (fq).
+  // when using fq, we can take the () out of the query.
   $filters = array();
   foreach($configuration['filters'] as $filter ) {
     $filters[] = $filter['predicate'] . ':"' . $filter['value'] . '"';
