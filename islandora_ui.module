@@ -67,16 +67,13 @@ function islandora_ui_wysiwyg_plugin($editor, $version) {
     case 'ckeditor':
       return array(
         'islandora_path' => array(
-          'name' => 'islandora_path',
-          'desc' => t('Islandora Link - A plugin to easily create links to Islandora content.'),
           'path' => drupal_get_path('module', 'islandora_ui') . '/plugins/islandora_path',
           'load' => TRUE,
-          'internal' => FALSE,
+          'extensions' => array('Islandora Link' => t('Islandora Link')),
         ),
       );
       break;
   }
-
 }
 
 /**
