@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This module implements a few features that Islandora admins might find useful.
+In this branch, this is ONLY the autocomplete feature.
 
 ## Requirements
 
@@ -26,7 +26,7 @@ Configure autocomplete profiles at Admin -> Islandora -> Islandora Utility Modul
 
 ### Features
 
-* "Add DSID" and "Edit DSID" tabs will show up on all islandora objects that have associations with XML forms for editing.
+* ~~"Add DSID" and "Edit DSID" tabs will show up on all islandora objects that have associations with XML forms for editing.~~
 * An autocomplete link tab is added to CKEditor's link plugin to easily add links to islandora objects. 
 
 
