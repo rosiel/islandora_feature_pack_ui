@@ -59,6 +59,29 @@ function islandora_ui_ckeditor_plugin() {
 }
 
 /**
+ * Implements hook_wysiwyg_plugin().
+ */
+
+function islandora_ui_wysiwyg_plugin($editor, $version) {
+  switch($editor) {
+    case 'ckeditor':
+      return array(
+        'islandora_path' => array(
+          'name' => 'islandora_path',
+          'desc' => t('Islandora Link - A plugin to easily create links to Islandora content.'),
+          'path' => drupal_get_path('module', 'islandora_ui') . '/plugins/link/',
+          'filename' => 'plugin.js',
+          'buttons' => array('link' => t('Islandora Link')),
+          'load' => TRUE,
+          'internal' => FALSE,
+        ),
+      );
+      break;
+  }
+
+}
+
+/**
  * Implementation of hook_element_info_alter().
  */
 function islandora_ui_element_info_alter(&$type) {
