@@ -14,7 +14,7 @@ function islandora_ui_menu() {
   $items['islandora_ui/autocomplete/%'] = array(
     'page callback' => 'islandora_ui_autocomplete',
     'page arguments' => array(2),
-    'access arguments' => array('access ckeditor link'), // FIXME
+    'access arguments' => array('access islandora link'),
     'type' => MENU_CALLBACK,
   );
   $items['admin/islandora/tools/ui'] = array(
@@ -45,6 +45,15 @@ function islandora_ui_menu() {
   return $items;
 }
 
+/**
+ * Implementation of hook_permission().
+ */
+function islandora_ui_permission() {
+  return array(
+    'access islandora link' => array('title' => t('Access <em>Islandora Link</em>')),
+    'administer islandora link' => array('title' => t('Administer <em>Islandora Link</em>')),
+  );
+}
 
 /**
  * Implements hook_ckeditor_plugin().
@@ -80,7 +89,7 @@ function islandora_ui_wysiwyg_plugin($editor, $version) {
  * Implementation of hook_element_info_alter().
  */
 function islandora_ui_element_info_alter(&$type) {
-  if (user_access('access ckeditor link')) {
+  if (user_access('access islandora link')) {
     $type['text_format']['#pre_render'][] = 'islandora_ui_text_format_pre_render';
     $type['form']['#post_render'][] = 'islandora_ui_form_post_render';
   }
