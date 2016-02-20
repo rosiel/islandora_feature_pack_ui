@@ -175,7 +175,7 @@ function islandora_ui_autocomplete($config_name = NULL) {
   }
   // Set the return values.
   $params = array(
-    'fl' => array($configuration['search_field'], 'PID'),
+    'fl' => $configuration['search_field'] . ', PID',
   );
 
   // Set the "filters" - at the moment they are in the query (q) and should be moved to filter query (fq).
