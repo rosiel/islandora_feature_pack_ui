@@ -119,7 +119,7 @@
                         onLoad: function() {
                             console.log("doing the onLoad!")
                             this.getInputElement().addClass('form-autocomplete');
-                            initAutocomplete(this.getInputElement().$, Drupal.settings.islandora_link.autocomplete_path + 'fpp');
+                            initAutocomplete(this.getInputElement().$, Drupal.settings.islandora_link.autocomplete_path + 'html_article');
                         },
                         setup: function(data) {
                             this.setValue(data.islandora_path || '');
