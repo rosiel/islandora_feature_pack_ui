@@ -146,7 +146,7 @@
                             id: 'autocomplete_option',
                             label: 'Select a filter and autocomplete profile.',
                             items: Drupal.settings.islandora_link.autocomplete_options,
-                            'default': 'group',
+                            'default': 'html_article',
                             onChange: function() {
                                 // this = CKEDITOR.ui.dialog.radio
                                 var dialog = this.getDialog();
