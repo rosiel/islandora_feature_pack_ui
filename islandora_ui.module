@@ -99,6 +99,9 @@ function islandora_ui_edit_datastream($object, $dsid) {
  * Access callback for editing datastreams also checks if datastream is present.
  */
 function islandora_ui_edit_datastream_access($object, $dsid, $cmodels) {
+  if (!user_is_logged_in()) {
+    return FALSE;
+  }
   if (!isset($object[$dsid])) {
     return FALSE;
   }
